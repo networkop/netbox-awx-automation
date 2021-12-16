@@ -1,0 +1,12 @@
+{% for interface in data.interfaces|default() %}
+{% set _ = config['set']['interface'].update(dict({
+  interface.name: dict({
+    "link": dict({
+      "state": dict({
+        "up": dict()
+        })
+      })
+    })
+  })) 
+%}
+{% endfor %}

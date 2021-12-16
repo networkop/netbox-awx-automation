@@ -1,0 +1,12 @@
+   
+{% set _ = config['set']['interface'].update(dict({
+    "lo": dict({
+        "type": "loopback",
+        "ip": dict({
+            "address": dict({
+                loopback_ip: dict()
+                }) 
+            })
+        })
+    })) 
+%}

@@ -1,0 +1,81 @@
+{% set _ = config['set']['router'].update(dict({
+    "bgp": dict({
+        "router-id": loopback_ip | ansible.netcommon.ipv4('address'),
+        "autonomous-system":  data.bgp.asn 
+        })
+    })) 
+%}    
+
+
+{% set _ = config['set'].update(dict({
+  "vrf": dict({
+    "default": dict({
+      "router": dict({
+        "bgp": dict()
+      })
+    })
+  })
+})) %}
+    
+{# processing neighbors #}
+{% if data.bgp.neighbors is defined %}
+{% set neighbors_instance = dict() %}
+
+{% for neighbor in data.bgp.neighbors %}
+{% set _ = neighbors_instance.update(dict({
+    neighbor.interface : dict({
+      "peer-group": neighbor.peergroup,
+      "type": "unnumbered"
+    })
+})) %}
+{% endfor %}{# bgp.neighbors #}
+
+{% set _ = config['set']['vrf']['default']['router']['bgp'].update(dict({ "neighbor": neighbors_instance })) %}
+
+{% endif %}{# data.bgp.neighbors #}
+
+
+
+{# processing peer groups #}
+{% if data.bgp.peergroups is defined %}
+{% set peergroup_instance = dict() %}
+
+{% for peergroup in data.bgp.peergroups|default() %}
+{% set _ = peergroup_instance.update(dict({
+    peergroup.name : dict({
+      "remote-as": peergroup.remote_as
+    })
+})) %}
+{% endfor %}{# bgp.peergroups #}
+
+{% set _ = config['set']['vrf']['default']['router']['bgp'].update(dict({ "peer-group": peergroup_instance })) %}
+
+{% endif %}{# data.bgp.peergroups #}
+
+{# processing address families #}
+{% if data.bgp.address_family is defined %}
+{% set address_family_instance = dict() %}
+
+{%   for address_family in data.bgp.address_family|default() %}
+{%     if address_family.name == "ipv4_unicast" %}
+{% set _ = address_family_instance.update(dict({
+  "ipv4-unicast": dict({
+    "enable": "on",
+    "redistribute": dict()
+  })
+})) %}
+
+{%       for redistribute in address_family.redistribute|default() %}
+{% set _ = address_family_instance['ipv4-unicast']['redistribute'].update(dict({
+    redistribute.type : dict({
+      "enable": "on"
+    })
+})) %}
+{%       endfor %}{# address_family.redistribute #}
+
+{%     endif %}{# address_family.name #}
+{%   endfor %}{# bgp.address_family #}
+
+{% set _ = config['set']['vrf']['default']['router']['bgp'].update(dict({ "address-family": address_family_instance })) %}
+
+{% endif %}{# bgp.address_family #}

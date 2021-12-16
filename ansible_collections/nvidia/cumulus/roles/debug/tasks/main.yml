@@ -1,0 +1,4 @@
+- name: debug
+  debug:
+    msg: "{{ hostvars[inventory_hostname] }}"
+

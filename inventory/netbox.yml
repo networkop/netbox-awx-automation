@@ -1,0 +1,9 @@
+plugin: netbox.netbox.nb_inventory
+api_endpoint: http://citc-netbox
+validate_certs: False
+interfaces: true
+config_context: False
+group_by:
+  - device_roles
+device_query_filters:
+  - has_primary_ip: 'true'

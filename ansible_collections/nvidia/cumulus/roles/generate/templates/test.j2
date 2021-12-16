@@ -1,0 +1,18 @@
+{% set config = dict({"set": dict()}) %}
+{% set loopback_ip = hostvars[inventory_hostname].netbox_ips | community.general.json_query('[?assigned_object.name==`lo`].address') | first %}
+
+{%   include './features/hostname.j2' %}
+
+{# interface config #}
+{% set _ = config['set'].update(dict({"interface": dict()})) %}
+{%   include './features/eth0.j2' %}
+{%   include './features/swp.j2' %}
+{%   include './features/loopback.j2' %}
+
+{# bgp config #}
+{% set _ = config['set'].update(dict({"router": dict()})) %}
+{%   include './features/bgp.j2' %}
+
+[
+    {{ config | to_nice_json  }}
+]

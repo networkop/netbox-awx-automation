@@ -1,0 +1,7 @@
+graph "netbox-awx" {
+  "leaf01" [ memory="1024" os="cumulus-vx-5.0.0" cpus="1"]
+  "leaf02" [ memory="1024" os="cumulus-vx-5.0.0" cpus="1"]
+  "netq-ts" [ os="netq-ts-cloud-4.0.0" ]
+    "leaf02":"swp1" -- "leaf01":"swp1"
+    "leaf02":"swp2" -- "leaf01":"swp2"
+}

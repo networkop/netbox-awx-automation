@@ -1,0 +1,14 @@
+- name: Download devices from netbox
+  ansible.builtin.set_fact: netbox_devices="{{ query('netbox.netbox.nb_lookup', 'devices', api_filter='name='+inventory_hostname) | map(attribute="value") | first  }}"
+  delegate_to: localhost
+
+- name: Download interfaces from netbox
+  ansible.builtin.set_fact: 
+    netbox_interfaces: "{{ netbox_interfaces | default({}) | combine ({ item.value.name : item.value }) }}"
+  loop: "{{  query('netbox.netbox.nb_lookup', 'interfaces', api_filter='device='+inventory_hostname) }}"
+  delegate_to: localhost
+
+- name: Download ip-addresses from netbox
+  ansible.builtin.set_fact: 
+    netbox_ips: "{{  query('netbox.netbox.nb_lookup', 'ip-addresses', api_filter='device='+inventory_hostname) | map(attribute='value')  }}"
+  delegate_to: localhost

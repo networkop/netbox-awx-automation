@@ -1,0 +1,25 @@
+{% set _ = config['set']['interface'].update(dict({
+    "eth0": dict({
+        "type": "eth",
+        "ip": dict({
+            "vrf": "mgmt"
+            })
+        })
+    })) 
+%}
+
+{% if data.eth0.ips is not defined %}
+{% set _ = config['set']['interface']['eth0']['ip'].update(dict({
+    "address": dict ({
+        'dhcp': dict()
+        })
+})) %}
+{% else %}
+{%   for address in data.eth0.ips|default() %}
+{% set _ = config['set']['interface']['eth0']['ip'].update(dict({
+    "address": dict ({
+        address: dict()
+        })
+})) %}
+{%   endfor %}
+{% endif %}

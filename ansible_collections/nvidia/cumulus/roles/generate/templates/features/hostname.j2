@@ -1,0 +1,6 @@
+{% set _ = config['set'].update(dict({
+    "system": dict({
+        "hostname": inventory_hostname
+        })
+    })) 
+%}

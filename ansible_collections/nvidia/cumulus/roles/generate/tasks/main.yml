@@ -1,0 +1,8 @@
+
+- name: Drop the nvue yaml
+  ansible.builtin.template:
+    src: test.j2
+    dest: /tmp/netbox_config.config
+  vars:
+    data: "{{ hostvars[inventory_hostname].netbox_devices.config_context }}"
+

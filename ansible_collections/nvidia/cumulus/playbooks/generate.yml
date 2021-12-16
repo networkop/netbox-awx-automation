@@ -1,0 +1,11 @@
+- name: Generate config variables
+  hosts: all
+  gather_facts: false
+  become: true
+  pre_tasks:
+  - name: pre-fetch netbox data
+    include_role:
+      name: netbox
+
+  roles:
+      - { role: generate }

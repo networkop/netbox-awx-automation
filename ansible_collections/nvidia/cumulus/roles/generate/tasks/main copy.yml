@@ -1,0 +1,17 @@
+- name: Enable nvued
+  ansible.builtin.systemd:
+    state: started
+    name: nvued
+
+- name: Drop the nvue yaml
+  ansible.builtin.template:
+    src: netbox.j2
+    dest: /tmp/netbox_config.config
+  vars:
+    data: "{{ hostvars[inventory_hostname].netbox_devices.config_context }}"
+
+- name: nvue config replace
+  ansible.builtin.shell: nv config replace /tmp/netbox_config.config
+
+- name: nvue config apply
+  ansible.builtin.shell: nv config apply -y
