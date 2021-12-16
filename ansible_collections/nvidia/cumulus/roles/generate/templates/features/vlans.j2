@@ -1,8 +1,0 @@
-    bridge:
-      domain:
-        br_default:
-          type: vlan-aware
-          vlan:
-{%- for vlan in data.vlans %} 
-            '{{ vlan.id }}': {}
-{% endfor %}

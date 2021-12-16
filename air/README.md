@@ -210,3 +210,21 @@ ssh://cumulus@worker04.air.nvidia.com:27230
 ```
 
 Netbox and AWX are now available at [localhost:8080](http://localhost:8080) (admin/admin) and [localhost:8081](http://localhost:8081) (admin/Wqh8DgymK1RMVYMzVFtGSBYqbvBrQ0PS) respectively.
+
+---
+
+On all nodes run:
+```
+history -c
+```
+
+On the `oob-mgmt-server run:
+```
+passwd ubuntu # nvidia
+sudo passwd --expire ubuntu
+```
+
+
+<!--
+https://air.nvidia.com/api/v1/simulation/autoprovision/?simulation_id=e4a0b507-6b7c-40e6-b6d9-893899d8a8b3
+-->

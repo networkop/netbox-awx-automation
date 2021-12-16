@@ -1,31 +1,18 @@
+{% set config = dict({"set": dict()}) %}
 {% set loopback_ip = hostvars[inventory_hostname].netbox_ips | community.general.json_query('[?assigned_object.name==`lo`].address') | first %}
-- set:
-    platform:
-      hostname:
-        value: {{ inventory_hostname }}
-{% if data.vlans is defined %}
-{%   include './features/vlans.j2' %}
-{% endif %}
-{% if data.vnis is defined %}
-{%   include './features/nve.j2' %}
-{% endif %}
-{% if data.bgp is defined %}
+
+{%   include './features/hostname.j2' %}
+
+{# interface config #}
+{% set _ = config['set'].update(dict({"interface": dict()})) %}
+{%   include './features/eth0.j2' %}
+{%   include './features/swp.j2' %}
+{%   include './features/loopback.j2' %}
+
+{# bgp config #}
+{% set _ = config['set'].update(dict({"router": dict()})) %}
 {%   include './features/bgp.j2' %}
-{% endif %}
-    interface:
-{% include './features/eth0.j2' %}
-{% include './features/loopback.j2' %}
-{% include './features/swp.j2' %}
-{% if data.bonds is defined %}
-{%   include './features/bonds.j2' %}
-{% endif %}
-{% if data.mlag is defined %}
-{%   include './features/peerlink.j2' %}
-{% endif %}
-{% if data.vnis is defined %}
-{%   include './features/svi.j2' %}
-{% endif %}
-{%   include './features/services.j2' %}
-{% if data.mlag is defined %}
-{%   include './features/mlag.j2' %}
-{% endif %}
+
+[
+    {{ config | to_nice_json  }}
+]
