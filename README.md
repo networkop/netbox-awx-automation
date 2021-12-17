@@ -265,3 +265,45 @@ Now that we have the data models defined in AWX, we can use it to provision our 
 
 ![](https://gitlab.com/nvidia-networking/systems-engineering/poc-support/netbox-awx-automation/-/raw/main/awx/provision.png)
 
+The new playbook will go through the following sequence of actions:
+
+1. Fetch configuration data from Netbox using the [`nb_lookup`](https://docs.ansible.com/ansible/latest/collections/netbox/netbox/nb_lookup_lookup.html) plugin.
+2. Using the collected data, generate NVUE configuration file for every device.
+3. Apply the generated configuration file.
+
+Here's an example of a jinja template that that pulls information from multiple sources and generates the final NVUE JSON configuration file.
+
+```jinja
+{% set config = dict({"set": dict()}) %}
+{% set loopback_ip = hostvars[inventory_hostname].netbox_ips | community.general.json_query('[?assigned_object.name==`lo`].address') | first %}
+
+{%   include './features/hostname.j2' %}
+
+{# interface config #}
+{% set _ = config['set'].update(dict({"interface": dict()})) %}
+{%   include './features/eth0.j2' %}
+{%   include './features/swp.j2' %}
+{%   include './features/loopback.j2' %}
+
+{# bgp config #}
+{% set _ = config['set'].update(dict({"router": dict()})) %}
+{%   include './features/bgp.j2' %}
+
+[
+    {{ config | to_nice_json  }}
+]
+```
+
+Once the "provision" job has run succesfully, we should be able to ping between loopback interfaces of `leaf01` and `leaf02`
+
+```
+cumulus@leaf01:mgmt:~$ ping 10.0.1.12 -I 10.0.1.11 -c 2
+vrf-wrapper.sh: switching to vrf "default"; use '--no-vrf-switch' to disable
+PING 10.0.1.12 (10.0.1.12) from 10.0.1.11 : 56(84) bytes of data.
+64 bytes from 10.0.1.12: icmp_seq=1 ttl=64 time=0.368 ms
+64 bytes from 10.0.1.12: icmp_seq=2 ttl=64 time=0.395 ms
+
+--- 10.0.1.12 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 39ms
+rtt min/avg/max/mdev = 0.368/0.381/0.395/0.023 ms
+```
