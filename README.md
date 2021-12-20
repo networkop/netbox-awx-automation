@@ -29,7 +29,7 @@ Both AWX and Netbox are deployed in the Kubernetes cluster running inside the `n
 In order to connect to the web UI of Netbox and AWX, we'll use SSH port forwarding through `oob-mgmt-server`. Change to the "Advanced" lab view in Air and click "Enable SSH Service". Use the following command when connecting to the `oob-mgmt-server` (adjust SSH URL based on the generated host and port numbers):
 
 ```
-ssh -L 8080:192.168.200.250:30329 -L 8081:192.168.200.250:32670 ssh://ubuntu@worker07.air.nvidia.com:22708
+ssh -L 8080:192.168.200.250:30845 -L 8081:192.168.200.250:31768 ssh://ubuntu@worker07.air.nvidia.com:22708
 ```
 
 This should make Netbox available on [localhost:8080](http://localhost:8080) and AWX available on [localhost:8081](http://localhost:8081).
@@ -122,7 +122,26 @@ This is all what we need to populate basic Netbox data. This can be verified usi
 ## 2. Configuring AWX
 
 In order to use Netbox as an inventory source, we need to provide a way to pass authentication details to the [nb_inventory plugin](https://docs.ansible.com/ansible/latest/collections/netbox/netbox/nb_inventory_inventory.html). To do that, add a new credential type for netbox. From [AWX dashboard](http://localhost:8081) navigate to Administration -> Credential Types and add a new "netbox" credential type.
+```
+---
+fields:
+- type: string
+  id: netbox_api
+  label: Netbox API URL
+- type: string
+  id: netbox_token
+  label: Netbox Token
+required:
+- netbox_token
+- netbox_api
+```
+```
+---
+env:
+    NETBOX_API: "{{ netbox_api }}
+    NETBOX_TOKEN: "{{ netbox_token }}
 
+```
 ![](https://gitlab.com/nvidia-networking/systems-engineering/poc-support/netbox-awx-automation/-/raw/main/awx/credential-type.png)
 
 Now we can create a new credential object with the details of the local Netbox instance, i.e. URL `http://citc-netbox` and token `0123456789abcdef0123456789abcdef01234567`:
@@ -215,6 +234,9 @@ To check the final state that will be rendered for "leaf01":
 ```python
 import json
 print(json.dumps(leaf01.get_config_context(), indent=2))
+```
+Which should display:
+```python
 {
   "bgp": {
     "asn": 65001,
